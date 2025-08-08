@@ -16,7 +16,7 @@ public class TestChatCommand : IChatCommand{
 
         //TODO: tahts not how should work while we have gatewayconnection etc. should i send it by it.
         //then i also not need to use using above
-         using var client = new HttpClient();
+        using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", CONFIG.Token);
         var payload = JsonSerializer.Serialize(new { content = "TestChatCommand Working" });
         await client.PostAsync($"https://discord.com/api/v10/channels/{channelId}/messages",

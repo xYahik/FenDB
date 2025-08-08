@@ -14,9 +14,7 @@ public class TestSlashCommand : ISlashCommand{
     }
 
     private async Task SendMessage(string id,string token){
-
-        //TODO: tahts not how should work while we have gatewayconnection etc. should i send it by it.
-        //then i also not need to use using above
+        
          using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", CONFIG.Token);
         var payload = JsonSerializer.Serialize(new { type = 4, data = new {content ="Hello"/*, flags=64 visible only for user*/} });

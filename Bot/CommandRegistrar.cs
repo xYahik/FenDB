@@ -63,7 +63,11 @@ public class CommandRegistrar{
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", CONFIG.Token);
 
         foreach(var command in _slashCommands){
-            var commandBody = new {name = command.Name.ToLowerInvariant(), description = command.Description, type = command.Type};
+
+            var hasAdminOnly = command.GetType().GetCustomAttribute<AdminOnlyAttribute>() != null;
+
+            //default_member_permission - we can assume that default permission to use command everyone is DiscordPermissionFlags.SEND_MESSAGES, if we can't write we shouldn't be able to use command anyway
+            var commandBody = new {name = command.Name.ToLowerInvariant(), description = command.Description, type = command.Type, default_member_permissions = hasAdminOnly ? DiscordPermissionFlags.ADMINISTRATOR : DiscordPermissionFlags.SEND_MESSAGES};
             var json = JsonSerializer.Serialize(commandBody);
             //Console.WriteLine(json);
             var content = new StringContent(json,Encoding.UTF8, "application/json");
