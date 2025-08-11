@@ -8,8 +8,9 @@ public class TestSlashCommand : ISlashCommand{
     public string Name => "TestSlashCommand";
     public string Description => "Test Slash Command Description";
     public int Type => 1;
+    public List<CommandParam> Parameters => null;
 
-    public async Task ExecuteAsync(string id,string token){
+    public async Task ExecuteAsync(string id,string token, string data){
         await SendMessage(id,token);
     }
 
@@ -19,6 +20,6 @@ public class TestSlashCommand : ISlashCommand{
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", CONFIG.Token);
         var payload = JsonSerializer.Serialize(new { type = 4, data = new {content ="Hello"/*, flags=64 visible only for user*/} });
         await client.PostAsync($"https://discord.com/api/v10/interactions/{id}/{token}/callback",
-            new StringContent(payload, Encoding.UTF8, "application/json"));
+        new StringContent(payload, Encoding.UTF8, "application/json"));
     }
 }

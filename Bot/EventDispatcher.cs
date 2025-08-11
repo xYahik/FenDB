@@ -45,7 +45,7 @@ public class EventDispatcher{
                         var cmd = _commandRegistrar._slashCommands.FirstOrDefault(c=> c.Name.ToLowerInvariant() == commandName);
                         if(cmd != null){
                             Console.WriteLine($"SlashCommand - {commandName} by user");
-                            await cmd.ExecuteAsync(id,token);
+                            await cmd.ExecuteAsync(id,token, msg);
                         }
                     }
                 }

@@ -67,8 +67,15 @@ public class CommandRegistrar{
             var hasAdminOnly = command.GetType().GetCustomAttribute<AdminOnlyAttribute>() != null;
 
             //default_member_permission - we can assume that default permission to use command everyone is DiscordPermissionFlags.SEND_MESSAGES, if we can't write we shouldn't be able to use command anyway
-            var commandBody = new {name = command.Name.ToLowerInvariant(), description = command.Description, type = command.Type, default_member_permissions = hasAdminOnly ? DiscordPermissionFlags.ADMINISTRATOR : DiscordPermissionFlags.SEND_MESSAGES};
-            var json = JsonSerializer.Serialize(commandBody);
+            var commandBody = new {
+                name = command.Name.ToLowerInvariant(), 
+                description = command.Description, 
+                type = command.Type, 
+                default_member_permissions = hasAdminOnly ? DiscordPermissionFlags.ADMINISTRATOR : DiscordPermissionFlags.SEND_MESSAGES,
+                options = command.Parameters
+                };
+
+            var json = JsonSerializer.Serialize(commandBody,new JsonSerializerOptions{PropertyNamingPolicy = JsonNamingPolicy.CamelCase});
             //Console.WriteLine(json);
             var content = new StringContent(json,Encoding.UTF8, "application/json");
             var url = $"https://discord.com/api/v10/applications/{CONFIG.AppId}/guilds/{CONFIG.GuildId}/commands";
