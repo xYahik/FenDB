@@ -1,15 +1,19 @@
 namespace FenDB.Bot;
 
-public class FenDB {
+public class FenDB
+{
 
     private readonly GatewayConnection _connection = new();
     private readonly HeartbeatService _heartbeatService = new();
     private readonly EventDispatcher _eventDispatcher = new();
     private readonly CommandRegistrar _commandRegistrar = new();
+    private SQLController _sqlController = new();
 
-    public async Task StartAsync() {
+    public async Task StartAsync()
+    {
         Console.WriteLine("Starting FenDB...");
-
+        await _sqlController.Initialize();
+        await ServerSettingsController.LoadOptionsFromDB();
         await _commandRegistrar.RegisterCommandAsync();
         await _connection.ConnectAsync();
 

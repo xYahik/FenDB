@@ -17,6 +17,11 @@ FenDB is currently in early development. The foundation is being built in pure C
 - C# (.NET)
 - Discord API
 
+## Requirements
+
+- PostgreSQL
+  - In PostgreSQL, create a new user `fendb` and database `fendb`, and then grant that user access to that database.
+
 ## Getting Started
 
 Instructions to be added soon.
