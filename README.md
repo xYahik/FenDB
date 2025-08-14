@@ -26,6 +26,14 @@ FenDB is currently in early development. The foundation is being built in pure C
 
 Instructions to be added soon.
 
+## TODO
+
+- Improve usage of the reflection system. Currently some part of the code still uses static parameter names.
+- Create EmbedBuilder
+- Improving bot response with slash command
+- FAQ interactive answering (Sentence-Transformers)
+- Logger (join/left server, edit/delete messages)
+
 ## Feedback & Ideas
 
 I'm open to suggestions and ideas on how to improve FenDB.  
