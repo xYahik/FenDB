@@ -18,7 +18,7 @@ public class GatewayConnection {
             op = 2,
             d = new {
                 token = CONFIG.Token,
-                intents = DiscordIntents.GUILD_MESSAGES | DiscordIntents.MESSAGE_CONTENT,
+                intents = DiscordIntents.GUILD_MESSAGES | DiscordIntents.MESSAGE_CONTENT | DiscordIntents.GUILD_MEMBERS,
                 properties = new {
                     os = "linus", browser = "custom", device = "custom"
                 }

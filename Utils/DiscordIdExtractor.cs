@@ -15,4 +15,17 @@ public class DiscordIdExtractor
             return null;
         }
     }
+    public static string? GetRoleID(string input)
+    {
+        string pattern = @"\d{19}";
+        Match match = Regex.Match(input, pattern);
+        if (match.Success)
+        {
+            return match.Value;
+        }
+        else
+        {
+            return null;
+        }
+    }
 }

@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace FenDB.Bot;
 
-public class SQLController
+public class SQLManager
 {
     public static NpgsqlConnection connection;
 

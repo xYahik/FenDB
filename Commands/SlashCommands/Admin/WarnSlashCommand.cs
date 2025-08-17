@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Channels;
 using Npgsql;
 
 namespace FenDB.Bot;
@@ -39,14 +40,14 @@ public class WarnSlashCommand : ISlashCommand
         }
 
         await GiveWarnToUser(_guildId, _userId, _channelId, _reason, 172800);
-        await SendEmbed(id, token, _userId, _channelId, _reason);
+        await SendEmbed(id, token, _guildId, _userId, _channelId, _reason);
 
     }
 
     private async Task GiveWarnToUser(string serverId, string userId, string channelId, string reason, int warnTimeExpirationSeconds)
     {
         DateTime warnExpirationDate = DateTime.Now.AddSeconds(warnTimeExpirationSeconds);
-        using (var cmd = new NpgsqlCommand("INSERT INTO warns (server_id, user_id, expire_date, reason) VALUES (@serverId, @userId, @expireDate, @reason)", SQLController.connection))
+        using (var cmd = new NpgsqlCommand("INSERT INTO warns (server_id, user_id, expire_date, reason) VALUES (@serverId, @userId, @expireDate, @reason)", SQLManager.connection))
         {
             cmd.Parameters.AddWithValue("serverId", serverId);
             cmd.Parameters.AddWithValue("userId", userId);
@@ -55,8 +56,19 @@ public class WarnSlashCommand : ISlashCommand
 
             cmd.ExecuteNonQuery();
         }
+
+        var sqlResult = SQLManager.ExecuteQuery($"SELECT count(*) FROM warns WHERE user_id = '{userId}' and expire_date > NOW()");
+        if (sqlResult != null)
+        {
+            int ActiveWarnsCount = Convert.ToInt32(sqlResult);
+            int? _warnCountBeforeBan = Convert.ToInt32(ServerSettingsManager.GetOption(serverId, "WarnCountBeforeBan"));
+            if (_warnCountBeforeBan > 0 && ActiveWarnsCount >= _warnCountBeforeBan)
+            {
+                await BanUser(serverId, userId);
+            }
+        }
     }
-    private async Task SendEmbed(string id, string token, string userId, string channelId, string reason)
+    private async Task SendEmbed(string id, string token, string serverId, string userId, string channelId, string reason)
     {
 
         /*Download user avatar */
@@ -88,25 +100,8 @@ public class WarnSlashCommand : ISlashCommand
                 url = $"https://cdn.discordapp.com/avatars/{userId}/{avatarHash}.png"
             }
         };
-        var payload2 = new
-        {
-            embeds = new[] { embed }
-        };
 
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bot {CONFIG.Token}");
-            var json = JsonSerializer.Serialize(payload2);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync($"https://discord.com/api/v10/channels/{channelId}/messages", content);
-
-            if (response.IsSuccessStatusCode)
-                Console.WriteLine("Sent embed!");
-            else
-                Console.WriteLine("Error: " + response.StatusCode);
-        }
-
+        Logger.SendEmbed(serverId, embed);
 
         using (var client = new HttpClient())
         {
@@ -116,11 +111,37 @@ public class WarnSlashCommand : ISlashCommand
                 data = new
                 {
                     content = "Warned",
-                    flags = 64
+                    flags = 64,
+                    embeds = new[] { embed }
                 }
             });
             await client.PostAsync($"https://discord.com/api/v10/interactions/{id}/{token}/callback",
                 new StringContent(payload3, Encoding.UTF8, "application/json"));
+        }
+    }
+
+    private async Task BanUser(string serverId, string userId)
+    {
+        Console.WriteLine($"Try to set ban role for user {userId}");
+        string? _banRoleId = ServerSettingsManager.GetOption(serverId, "BanRoleId");
+        if (_banRoleId == null)
+        {
+            Console.WriteLine("BanRole is not set, cannot procces further");
+            return;
+        }
+        using (var client = new HttpClient())
+        {
+            client.DefaultRequestHeaders.Add("Authorization", $"Bot {CONFIG.Token}");
+
+            var response = await client.PutAsync($"https://discord.com/api/v10/guilds/{serverId}/members/{userId}/roles/{_banRoleId}", null);
+
+            if (response.IsSuccessStatusCode)
+                Console.WriteLine("Ban role set");
+            else
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("Error: " + error);
+            }
         }
     }
 }

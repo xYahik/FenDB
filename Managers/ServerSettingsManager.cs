@@ -4,13 +4,13 @@ using System.Text.Json.Nodes;
 using System.Reflection;
 using FenDB.Bot;
 
-public class ServerSettingsController
+public class ServerSettingsManager
 {
     private static Dictionary<string, ServerSettings> _serverConfigs { get; } = new();
 
     public async static Task LoadOptionsFromDB()
     {
-        var result = SQLController.ExecuteQuery($@"
+        var result = SQLManager.ExecuteQuery($@"
         SELECT json_agg(row_to_json(t))
         FROM (
             SELECT * FROM serverSettings
@@ -73,7 +73,7 @@ public class ServerSettingsController
                 break;
             case "BanRoleId":
                 {
-                    serverConfig.BanRoleId = optionValue;
+                    serverConfig.BanRoleId = DiscordIdExtractor.GetRoleID(optionValue);
                 }
                 break;
             default: break;
@@ -90,7 +90,7 @@ public class ServerSettingsController
                 {
                     var value = prop.GetValue(serverConfig);
                     string sqlValue = (value == null || string.IsNullOrWhiteSpace(value.ToString())) ? "NULL" : $"'{value}'";
-                    SQLController.ExecuteUpdate(
+                    SQLManager.ExecuteUpdate(
                         @$"
                     INSERT INTO serverSettings (server_id, {attribute.VariableName})
                     VALUES ('{guildId}', {sqlValue})

@@ -20,7 +20,7 @@ public class ConfigSlashCommand : ISlashCommand
         var _channelId = _data["channel_id"].GetValue<String>();
         var _guildId = _data["data"]["guild_id"]?.GetValue<String>();
 
-        var embed = ServerSettingsController.GenerateSettingsEmbed(_guildId);
+        var embed = ServerSettingsManager.GenerateSettingsEmbed(_guildId);
 
         using (var client = new HttpClient())
         {

@@ -38,7 +38,7 @@ public class ConfigureSlashCommand : ISlashCommand
             }
         }
 
-        ServerSettingsController.SetOption(_guildId, _settingName, _settingValue);
+        ServerSettingsManager.SetOption(_guildId, _settingName, _settingValue);
 
         using (var client = new HttpClient())
         {
