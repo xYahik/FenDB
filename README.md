@@ -19,8 +19,9 @@ FenDB is currently in early development. The foundation is being built in pure C
 
 ## Requirements
 
-- PostgreSQL
+- PostgreSQL >= 14
   - In PostgreSQL, create a new user `fendb` and database `fendb`, and then grant that user access to that database.
+- Python >= 3.10
 
 ## Getting Started
 
