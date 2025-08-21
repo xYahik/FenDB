@@ -6,6 +6,7 @@ namespace FenDB.Bot;
 
 public class EventDispatcher
 {
+    public static event EventHandler<JsonNode>? OnMessageCreated;
     private readonly List<IChatCommand> _chatCommands = [new TestChatCommand()];
 
     public void Start(GatewayConnection connection, CommandRegistrar _commandRegistrar)
@@ -28,6 +29,9 @@ public class EventDispatcher
                     if (type == "MESSAGE_CREATE")
                     {
                         var data = payload["d"];
+
+                        OnMessageCreated?.Invoke(this, data);
+
                         var content = data?["content"]?.GetValue<string>()?.Trim();
                         var msgId = data?["id"]?.GetValue<string>();
                         var creationTimestamp = data?["timestamp"]?.GetValue<string>();

@@ -8,6 +8,7 @@ public class FenDB
     private readonly EventDispatcher _eventDispatcher = new();
     private readonly CommandRegistrar _commandRegistrar = new();
     private readonly PythonService _pythonService = new();
+    private readonly ModulesLoader _modulesLoader = new();
     private SQLManager _sqlController = new();
 
     public async Task StartAsync()
@@ -16,6 +17,7 @@ public class FenDB
         await _sqlController.Initialize();
         await _pythonService.Initialize();
         await ServerSettingsManager.LoadOptionsFromDB();
+        await _modulesLoader.InitializeModules();
         await _commandRegistrar.RegisterCommandAsync();
         await _connection.ConnectAsync();
 

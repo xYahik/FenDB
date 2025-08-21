@@ -5,6 +5,7 @@ using System.Security.Principal;
 
 public class PythonService
 {
+    private bool inTraceback = false;
     public async Task Initialize()
     {
         await PreparePythonEnv();
@@ -26,13 +27,13 @@ public class PythonService
         string pythonPath = isWindows ? Path.Combine(venvPath, "Scripts", "python.exe") : Path.Combine(venvPath, "bin", "python");
 
         Console.WriteLine("Installing requirements...");
-        await RunPythonProcess(pipPath, $"install --upgrade pip");
-        await RunPythonProcess(pipPath, $"install -r {Path.Combine(pythonServicePath, "requirements.txt --no-deps --ignore-installed")}");
+        await RunPythonProcess(pipPath, $"install --upgrade pip -q", false);
+        await RunPythonProcess(pipPath, $"install -r {Path.Combine(pythonServicePath, "requirements.txt -q")}", false);
 
         await RunPythonProcess(pythonPath, Path.Combine(pythonServicePath, "app.py"));
     }
 
-    private async Task RunPythonProcess(string command, string args)
+    private async Task RunPythonProcess(string command, string args, bool redirectOutput = true)
     {
         var process = new Process
         {
@@ -40,29 +41,70 @@ public class PythonService
             {
                 FileName = command,
                 Arguments = args,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
+                RedirectStandardOutput = redirectOutput,
+                RedirectStandardError = redirectOutput,
                 UseShellExecute = false,
                 CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
+
+        //Currently don't want log everything from python
+        process.OutputDataReceived += (s, e) =>
+        {
+            //if (!string.IsNullOrEmpty(e.Data))
+            //Console.WriteLine("[PYTHON] " + e.Data);
+        };
+
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (string.IsNullOrEmpty(e.Data)) return;
+            //Check if error is traceback
+            if (e.Data.StartsWith("Traceback") || e.Data.StartsWith("ERROR:"))
+            {
+                inTraceback = true;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine("[PYTHON ERROR] " + e.Data);
+            }
+            else if (inTraceback)
+            {
+                Console.Error.WriteLine("[PYTHON ERROR] " + e.Data);
+
+                //Way to determine if Python error print ended // Thats always end with line which start with ValueError,NameError,TypeError etc. so we just need check if first part contains Error word.
+                if (e.Data.Contains(":") && e.Data.Split(':')[0].EndsWith("Error"))
+                {
+                    inTraceback = false;
+                    Console.ResetColor();
+                }
             }
         };
 
+        //Currently don't want log everything from python
+        process.Exited += (s, e) =>
+        {
+            //Console.WriteLine($"Python exited with code {process.ExitCode}");
+        };
+
         process.Start();
+        if (redirectOutput)
+        {
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+        }
+        else
+        {
+            await process.WaitForExitAsync();
+        }
 
         Console.CancelKeyPress += (sender, e) =>
         {
             if (!process.HasExited)
+            {
+                //Console.WriteLine(process.StandardError.ReadToEnd());
                 process.Kill();
+            }
         };
 
-        //string output = process.StandardOutput.ReadToEnd();
-        //string error = process.StandardError.ReadToEnd();
-        //process.WaitForExit();
-
-        //if (!string.IsNullOrEmpty(output))
-        //    Console.WriteLine(output);
-        //if (!string.IsNullOrEmpty(error))
-        //    Console.WriteLine(error);
     }
 
     public async Task PreparePythonServer()
