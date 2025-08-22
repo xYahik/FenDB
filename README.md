@@ -24,6 +24,8 @@ The project still requires work on automation, optimizations, and additional fea
 
 - C# (.NET)
 - Discord API
+- Python
+- PostgreSQL
 
 ## Requirements
 
