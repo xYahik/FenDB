@@ -5,12 +5,20 @@ FenDB is a Discord bot designed to help manage servers, provide fun interactive 
 ## Features
 
 - Server management tools (in development)
+  - Warn Systems (implemented)
+  - Purge Command (implemented)
+  - Logs (implemented, requires further customization)
 - Fun and engaging commands for users (in development)
-- FAQ system that automatically answers common questions based on detected keywords (in development)
+  - WebScraper for random image from websites (Planned)
+  - Leveling/Activity System (Planned)
+- FAQ system that automatically answers common questions (implemented, but requires further customization)
 
 ## Current Status
 
-FenDB is currently in early development. The foundation is being built in pure C#, focusing on command registration and handling.
+FenDB is still in the early stages of development.  
+So far, a basic command registration and handling system has been implemented, along with a logging system and an intelligent FAQ feature that allows the bot to decide automatically whether to respond for messages.
+
+The project still requires work on automation, optimizations, and additional features.
 
 ## Technologies
 
@@ -25,15 +33,39 @@ FenDB is currently in early development. The foundation is being built in pure C
 
 ## Getting Started
 
-Instructions to be added soon.
+To get FenDB running, follow these simple steps:
+
+1.**Ensure you have the required software installed**
+
+2.**Configure the bot** (GuildId is configurable for now, until multi-server support is implemented):  
+ Edit `Config/Config.cs` to set your bot token, App ID, and server (guild) ID:
+
+```csharp
+public static class CONFIG
+{
+    public static string Token => "YOUR_BOT_TOKEN";
+    public static string AppId => "YOUR_APP_ID";
+    public static string GuildId => "YOUR_SERVER_ID"; // temporary, until multi-server support is added
+}
+```
+
+3.**Run the program:**
+
+```bash
+  dotnet run
+```
+
+- The program will automatically set up a local Python service with its own virtual environment.
+
+- The necessary SQL tables will be created automatically.
 
 ## TODO
 
 - Improve usage of the reflection system. Currently some part of the code still uses static parameter names.
-- Create EmbedBuilder
+- Managing servers, which will allow bot be used on multiple servers
 - Improving bot response with slash command
-- FAQ interactive answering (Sentence-Transformers)
-- Logger (join/left server, edit/delete messages)
+- WebScraper for random image from websites
+- Leveling/Activity System
 
 ## Feedback & Ideas
 
